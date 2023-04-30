@@ -32,6 +32,7 @@ def dcm_to_quaternion(dcm_matrix):
     dcm_position_31= dcm_matrix[2,0]
     dcm_position_32= dcm_matrix[2,1]
     dcm_position_33= dcm_matrix[2,2]
+    
     def calculate_q_tilde():
         """Calculate the intermediate Q tilde intermediate Quaternion"""
         qs_tilde = np.sqrt(0.25*(1 + dcm_position_11 + dcm_position_22 + dcm_position_33))
@@ -43,6 +44,7 @@ def dcm_to_quaternion(dcm_matrix):
     """Find the max value from the s, x, y, z components of the Q Tilde Quaternion. Note that this is currently
      an ndarray object in order to find the max value in a straightforward fashion."""
     q_max = np.max(q_tilde)
+    
     def calculate_qt_from_q_max():
         """Using the qmax value formulate the final quaternion."""
         # Breakup Q tilde into components
@@ -72,6 +74,8 @@ def dcm_to_quaternion(dcm_matrix):
         return np.quaternion(qs,qx,qy,qz)
     dcm_to_quaternion_result = calculate_qt_from_q_max()
     return dcm_to_quaternion_result
+
+
 def dcm_to_euler(dcm_matrix):
     """Convert a Direction Cosine Matrix to Euler Angles in a numpy array vector form"""
     dcm_matrix = dcm_matrix
@@ -94,6 +98,7 @@ def dcm_to_euler(dcm_matrix):
     if not -np.pi <= psi <= np.pi:
         raise Exception('Function dcm_to_euler failed; Arctan2 input(s) are not between -pi and pi!')
     return np.array([phi,theta,psi])
+  
         
 def quaternion_to_dcm(qt):
     """Convert from a Quaternion to a Direction Cosine Matrix. Takes a Quaternion object as argument. 
@@ -116,12 +121,14 @@ def quaternion_to_dcm(qt):
                     [dcm_position_31, dcm_position_32, dcm_position_33]])
     return dcm
 
+
 def quaternion_to_euler(qt):
     """Convert a Quaternion to Euler angles. Input should be a Quaternion formed from
     np.quaternion(w,x,y,z) and outputs an np.array(phi,theta,psi) Euler Angle."""
     dcm = quaternion_to_dcm(qt)
     final_euler_angles = dcm_to_euler(dcm)
     return final_euler_angles
+
 
 def euler_to_dcm(euler_angles):
     """Convert from Euler Angles to a Direction Cosine Matrix. Input should be 
@@ -156,6 +163,7 @@ def euler_angles_to_quaternion(euler_angles):
     output_quaternion = dcm_to_quaternion(dcm)
     return output_quaternion
 
+
 def find_quaternion_rotation_angle_rad(qt):
     """Extract the scalar component of a Quaternion to find its rotational angle in radians.
     Takes a Quaternion formed from np.quaternion(w,x,y,z) as argument."""
@@ -173,6 +181,7 @@ def find_quaternion_rotation_angle_deg(qt):
     rotation_angle_in_deg = 2 * np.arccos(qt.w) * 180 / np.pi
     return rotation_angle_in_deg
     
+    
 def find_quaternion_axis_of_rot(qt):
     """Find the axis of rotation as a unit vector. 
     Takes a Quaternion formed from np.quaternion(w,x,y,z) as argument."""
@@ -186,7 +195,7 @@ def find_quaternion_axis_of_rot(qt):
     
 
 def axis_angle_to_quaternion(angle, axis):
-    """Create a Quaternion with the inputs of the transformation angle in radians and a rotation axis as a unit vector"""
+    """Create a Quaternion with the inputs transformation angle in radians and a rotation axis as a unit vector"""
     transformation_angle = np.cos(angle/2)  
     vector_part = axis * np.sin(angle/2)
     output_quaternion = np.quaternion(transformation_angle,*vector_part)
