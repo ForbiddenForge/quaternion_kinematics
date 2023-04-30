@@ -86,6 +86,7 @@ def dcm_to_euler(dcm_matrix):
     dcm_position_32= dcm_matrix[2,1]
     dcm_position_33= dcm_matrix[2,2]
     phi = np.arctan2(dcm_position_23,dcm_position_33)
+    # Raise exceptions if outside of arctan2 range of -pi to pi
     if not -np.pi <= phi <= np.pi:
         raise Exception('Function dcm_to_euler failed; Arctan2 input(s) are not between -pi and pi!')
     theta = -np.arcsin(dcm_position_13)
@@ -152,8 +153,8 @@ def euler_angles_to_quaternion(euler_angles):
     # First convert Euler Angles to a Direction Cosine Matrix
     dcm = euler_to_dcm(euler_angles)
     # With this Direction Cosine Matrix we can now convert to a Quaternion using the dcm_to_quaternion function
-    final_quaternion = dcm_to_quaternion(dcm)
-    return final_quaternion
+    output_quaternion = dcm_to_quaternion(dcm)
+    return output_quaternion
 
 def find_quaternion_rotation_angle_rad(qt):
     """Extract the scalar component of a Quaternion to find its rotational angle in radians.
@@ -176,12 +177,21 @@ def find_quaternion_axis_of_rot(qt):
     """Find the axis of rotation as a unit vector. 
     Takes a Quaternion formed from np.quaternion(w,x,y,z) as argument."""
     vector_part = quaternion.as_vector_part(qt)
-    
+    #prevent division by zero 
     if np.sin(find_quaternion_rotation_angle_rad(qt)) == 0:
         axis_of_rotation = vector_part * 0
     else:
         axis_of_rotation = vector_part * (1/np.sin(find_quaternion_rotation_angle_rad(qt))/2)
     return axis_of_rotation
     
+
+def axis_angle_to_quaternion(angle, axis):
+    """Create a Quaternion with the inputs of the transformation angle in radians and a rotation axis as a unit vector"""
+    transformation_angle = np.cos(angle/2)  
+    vector_part = axis * np.sin(angle/2)
+    output_quaternion = np.quaternion(transformation_angle,*vector_part)
+    return output_quaternion
+
+
 
 
