@@ -43,7 +43,6 @@ def dcm_to_quaternion(dcm_matrix):
     """Find the max value from the s, x, y, z components of the Q Tilde Quaternion. Note that this is currently
      an ndarray object in order to find the max value in a straightforward fashion."""
     q_max = np.max(q_tilde)
-    q_max_index_value = q_tilde.argmax()
     def calculate_qt_from_q_max():
         """Using the qmax value formulate the final quaternion."""
         # Breakup Q tilde into components
@@ -73,6 +72,27 @@ def dcm_to_quaternion(dcm_matrix):
         return np.quaternion(qs,qx,qy,qz)
     dcm_to_quaternion_result = calculate_qt_from_q_max()
     return dcm_to_quaternion_result
+def dcm_to_euler(dcm_matrix):
+    """Convert a Direction Cosine Matrix to Euler Angles in a numpy array vector form"""
+    dcm_matrix = dcm_matrix
+    # Assign position values to each index of the DCM
+    dcm_position_11= dcm_matrix[0,0]
+    dcm_position_12= dcm_matrix[0,1]
+    dcm_position_13 = dcm_matrix[0,2]
+    dcm_position_21= dcm_matrix[1,0]
+    dcm_position_22= dcm_matrix[1,1]    
+    dcm_position_23= dcm_matrix[1,2]
+    dcm_position_31= dcm_matrix[2,0]
+    dcm_position_32= dcm_matrix[2,1]
+    dcm_position_33= dcm_matrix[2,2]
+    phi = np.arctan2(dcm_position_23,dcm_position_33)
+    if not -np.pi <= phi <= np.pi:
+        raise Exception('Function dcm_to_euler failed; Arctan2 input(s) are not between -pi and pi!')
+    theta = -np.arcsin(dcm_position_13)
+    psi = np.arctan2(dcm_position_12,dcm_position_11)
+    if not -np.pi <= psi <= np.pi:
+        raise Exception('Function dcm_to_euler failed; Arctan2 input(s) are not between -pi and pi!')
+    return np.array([phi,theta,psi])
         
 def quaternion_to_dcm(qt):
     """Convert from a Quaternion to a Direction Cosine Matrix. Takes a Quaternion object as argument. 
@@ -95,30 +115,42 @@ def quaternion_to_dcm(qt):
                     [dcm_position_31, dcm_position_32, dcm_position_33]])
     return dcm
 
+def quaternion_to_euler(qt):
+    """Convert a Quaternion to Euler angles. Input should be a Quaternion formed from
+    np.quaternion(w,x,y,z) and outputs an np.array(phi,theta,psi) Euler Angle."""
+    dcm = quaternion_to_dcm(qt)
+    final_euler_angles = dcm_to_euler(dcm)
+    return final_euler_angles
+
+def euler_to_dcm(euler_angles):
+    """Convert from Euler Angles to a Direction Cosine Matrix. Input should be 
+    Euler Angles as a numpy ndarray vector formed from np.array([phi, theta, psi]) in radians."""
+    # Roll / Bank (X axis rotation North / South)
+    phi,theta,psi = euler_angles
+    cb2_x = np.array([[1,           0,            0],
+                [0,      np.cos(phi), np.sin(phi)],
+                [0,     -np.sin(phi), np.cos(phi)]])
+
+    # Pitch (Y axis rotation East / West )
+    c21_y = np.array([[np.cos(theta), 0, -np.sin(psi)],
+                [0,              1,           0],
+                [np.sin(theta),  0, np.cos(theta)]])
+
+    # Yaw (Z axis rotation up/down)
+    c1v_z = np.array([[np.cos(psi), np.sin(psi), 0],
+                [-np.sin(psi), np.cos(psi),  0],
+                [0,              0,        1]])
+    # Perform rotation in ZYX order convention, multiplying in REVERSE order for this effect
+    rotation_matrix = cb2_x@c21_y@c1v_z
+    return rotation_matrix
+    
+    
 def euler_angles_to_quaternion(euler_angles):
     """Convert from Euler Angles to a Quaternion. Argument should be Euler Angles as a numpy ndarray vector formed
     from np.array([phi, theta, psi]) in radians."""
-    phi,theta,psi = euler_angles
+
     # First convert Euler Angles to a Direction Cosine Matrix
-    def euler_to_dcm():
-        # Roll / Bank (X axis rotation North / South)
-        cb2_x = np.array([[1,           0,            0],
-                    [0,      np.cos(phi), np.sin(phi)],
-                    [0,     -np.sin(phi), np.cos(phi)]])
-
-        # Pitch (Y axis rotation East / West )
-        c21_y = np.array([[np.cos(theta), 0, -np.sin(psi)],
-                    [0,              1,           0],
-                    [np.sin(theta),  0, np.cos(theta)]])
-
-        # Yaw (Z axis rotation up/down)
-        c1v_z = np.array([[np.cos(psi), np.sin(psi), 0],
-                    [-np.sin(psi), np.cos(psi),  0],
-                    [0,              0,        1]])
-        # Perform rotation in ZYX order convention, multiplying in REVERSE order for this effect
-        rotation_matrix = cb2_x@c21_y@c1v_z
-        return rotation_matrix
-    dcm = euler_to_dcm()
+    dcm = euler_to_dcm(euler_angles)
     # With this Direction Cosine Matrix we can now convert to a Quaternion using the dcm_to_quaternion function
     final_quaternion = dcm_to_quaternion(dcm)
     return final_quaternion
@@ -150,8 +182,6 @@ def find_quaternion_axis_of_rot(qt):
     else:
         axis_of_rotation = vector_part * (1/np.sin(find_quaternion_rotation_angle_rad(qt))/2)
     return axis_of_rotation
-    
-    
     
 
 
