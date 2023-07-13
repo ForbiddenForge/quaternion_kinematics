@@ -34,7 +34,6 @@ def dcm_to_quaternion(dcm_matrix):
     dcm_position_31 = dcm_matrix[2, 0]
     dcm_position_32 = dcm_matrix[2, 1]
     dcm_position_33 = dcm_matrix[2, 2]
-    print(f"top part{dcm_position_31-dcm_position_13}")
 
     def calculate_q_tilde():
         """Calculate the intermediate Q tilde Quaternion from the Direction Cosine Matrix"""
@@ -239,26 +238,3 @@ def axis_angle_to_quaternion(angle, axis):
     vector_part = axis * np.sin(angle / 2)
     output_quaternion = np.quaternion(transformation_angle, *vector_part)
     return output_quaternion
-
-
-phi = 25 * np.pi / 180
-theta = 130 * np.pi / 180
-psi = 70 * np.pi / 180
-
-
-euler_angles = np.array([phi,theta,psi])
-
-converted_quaternion = euler_angles_to_quaternion(euler_angles)
-print(f'{converted_quaternion=}')
-
-
-converted_euler_angles = quaternion_to_euler(converted_quaternion)
-
-phi, theta, psi = converted_euler_angles
-
-print(f'{phi=}, {theta=} {psi=}')
-
-phi = phi * 180 / np.pi
-theta = theta * 180 / np.pi
-psi = psi * 180 / np.pi
-print(f'{phi=}, {theta=} {psi=}')
