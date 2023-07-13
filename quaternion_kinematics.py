@@ -23,7 +23,6 @@ def dcm_to_quaternion(dcm_matrix):
     must be representative of Cb/v, or a representation of the rotation from the NED frame to the vehicle body frame.
     """
     dcm_matrix = dcm_matrix
-    print(f"{dcm_matrix=}")
     # Assign position values to each index of the DCM
     dcm_position_11 = dcm_matrix[0, 0]
     dcm_position_12 = dcm_matrix[0, 1]
