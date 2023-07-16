@@ -6,6 +6,14 @@ Euler Angles, Direction Cosine Matrices, and Quaternions. Useful in aerospace (r
 Rotations are right-hand ruled and conversions between reference frames assumes going from NED Frame => Body Frame of vehicle."""
 
 
+def create_euler_angle_from_deg(phi, theta, psi):
+    """Construct an Euler angle with three angle inputs in degrees"""
+    phi = phi * np.pi / 180
+    theta = theta * np.pi / 180
+    psi = psi * np.pi / 180
+    return np.array([phi, theta, psi])
+
+
 def quaternion_norm(qt):
     """Find Magnitude / Length / Norm of a quaternion. Takes a Quaternion as an argument"""
     return np.sqrt(qt.w**2 + qt.x**2 + qt.y**2 + qt.z**2)
